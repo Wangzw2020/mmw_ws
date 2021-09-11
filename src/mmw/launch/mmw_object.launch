@@ -1,0 +1,6 @@
+<!-- -->
+<launch>
+	<node pkg="mmw" type="mmw_object.py" name="mmw_node" output="screen">
+	</node>
+
+</launch>
