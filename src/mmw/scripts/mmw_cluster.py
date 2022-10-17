@@ -169,8 +169,5 @@ def talker():
 
 if __name__ == '__main__':
 	rospy.init_node("mmw_node", anonymous=True)
-	try:
-		talker()
-	except rospy.ROSInterruptException:
-		pass
+	talker()
 	rospy.spin()

@@ -1,0 +1,7 @@
+<!-- -->
+<launch>
+	<param name="theta" value="60"/>
+	<node pkg="mmw" type="mmw_object_new.py" name="mmw_node" output="screen">
+	</node>
+
+</launch>

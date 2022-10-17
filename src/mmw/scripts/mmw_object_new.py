@@ -9,6 +9,9 @@ from std_msgs.msg import String
 from visualization_msgs.msg import Marker, MarkerArray
 HOST = '192.168.0.226'
 PORT = 8887
+
+theta = 0
+
 class target:
 	def __init__(self):
 		self.id=0
@@ -71,22 +74,29 @@ def analyse(data,pub_marker):
 			t.width=data[40+37*k]/10						#目标宽度
 			print("target_length:%sm  target_width:%sm" %(t.length,t.width))
 			t.yaw=(data[41+37*k]*256+data[42+37*k])/10		#目标偏航角
+			t.yaw = -t.yaw
+			t.yaw += theta
 			print("target_yaw:%s°" %t.yaw)
-			t.x=(data[43+37*k]*256+data[44+37*k])/100
+			#目标位置
+			p_x=(data[43+37*k]*256+data[44+37*k])/100
 			if data[45+37*k]>=122.5:
-				t.y=(data[45+37*k]*256+data[46+37*k]-65536)/100
+				p_y=(data[45+37*k]*256+data[46+37*k]-65536)/100
 			else:
-				t.y=(data[45+37*k]*256+data[46+37*k])/100
+				p_y=(data[45+37*k]*256+data[46+37*k])/100
+			t.x = numpy.cos(theta * 3.14 / 180) * p_x - numpy.sin(theta * 3.14 / 180) * p_y
+			t.y = numpy.sin(theta * 3.14 / 180) * p_x + numpy.cos(theta * 3.14 / 180) * p_y
 			print("target_position:(%sm,%sm)" %(t.x,t.y))
-			
+			#目标速度
 			if data[47+37*k]>=122.5:
-				t.vx=(data[47+37*k]*256+data[48+37*k]-65536)/100				#目标速度
+				v_x=(data[47+37*k]*256+data[48+37*k]-65536)/100
 			else:
-				t.vx=(data[47+37*k]*256+data[48+37*k])/100	
+				v_x=(data[47+37*k]*256+data[48+37*k])/100
 			if data[49+37*k]>=122.5:
-				t.vy=(data[49+37*k]*256+data[50+37*k]-65536)/100
+				v_y=(data[49+37*k]*256+data[50+37*k]-65536)/100
 			else:
-				t.vy=(data[49+37*k]*256+data[50+37*k])/100	
+				v_y=(data[49+37*k]*256+data[50+37*k])/100
+			t.vx = numpy.cos(theta * 3.14 / 180) * v_x - numpy.sin(theta * 3.14 / 180) * v_y
+			t.vy = numpy.sin(theta * 3.14 / 180) * v_x + numpy.cos(theta * 3.14 / 180) * v_y
 			t.v=(data[51+37*k]*256+data[52+37*k])/100
 			print("target_speed:%skm/h vx=%sm/s vy=%sm/s" %(t.v,t.vx,t.vy))
 			
@@ -227,6 +237,8 @@ def talker():
 	conn.close()
 
 if __name__ == '__main__':
+	theta = rospy.get_param("theta", 10)
+	print("now theta: " ,theta)
 	rospy.init_node("mmw_node", anonymous=True)
 	talker()
 	rospy.spin()
